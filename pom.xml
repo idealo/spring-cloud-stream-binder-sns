@@ -4,7 +4,7 @@
 
     <groupId>de.idealo.spring</groupId>
     <artifactId>spring-cloud-stream-binder-sns</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
     <name>Spring Cloud Stream Binder for AWS SNS</name>
     <description>Allows you to use Spring Cloud Stream together with AWS SNS</description>
     <url>https://github.com/idealo/spring-cloud-stream-binder-sns</url>
@@ -32,7 +32,7 @@
         <connection>scm:git:https://github.com/idealo/spring-cloud-stream-binder-sns.git</connection>
         <developerConnection>scm:git:https://github.com/idealo/spring-cloud-stream-binder-sns.git</developerConnection>
         <url>https://github.com/idealo/spring-cloud-stream-binder-sns</url>
-        <tag>HEAD</tag>
+        <tag>v1.0.1</tag>
     </scm>
 
     <distributionManagement>
