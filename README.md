@@ -4,7 +4,15 @@ spring-cloud-stream-binder-sns lets you use [Spring Cloud Stream](https://spring
 
 ## Installation
 
-tbd
+```xml
+<dependencies>
+    <dependency>
+        <groupId>de.idealo.spring</groupId>
+        <artifactId>spring-cloud-stream-binder-sns</artifactId>
+        <version>1.0.3</version>
+    </dependency>
+</dependencies>
+```
 
 ## Usage
 
@@ -17,7 +25,7 @@ spring:
   cloud:
     stream:
       bindings:
-        someFunction-out-1:
+        someFunction-out-0:
           destination: topic-name
 ```
 
