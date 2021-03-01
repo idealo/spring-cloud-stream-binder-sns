@@ -1,1 +1,2 @@
-sns=de.idealo.spring.stream.binder.sns.config.SnsBinderConfiguration
+sns=de.idealo.spring.stream.binder.sns.config.SnsBinderConfiguration,\
+  de.idealo.spring.stream.binder.sns.config.SnsAsyncAutoConfiguration

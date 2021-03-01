@@ -5,13 +5,10 @@ import org.springframework.cloud.stream.binder.Binder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSAsync;
-import com.amazonaws.services.sns.AmazonSNSAsyncClientBuilder;
 
 import io.awspring.cloud.core.env.ResourceIdResolver;
-import io.awspring.cloud.core.region.RegionProvider;
 
 import de.idealo.spring.stream.binder.sns.SnsMessageHandlerBinder;
 import de.idealo.spring.stream.binder.sns.provisioning.SnsStreamProvisioner;
@@ -19,15 +16,6 @@ import de.idealo.spring.stream.binder.sns.provisioning.SnsStreamProvisioner;
 @Configuration
 @ConditionalOnMissingBean(Binder.class)
 public class SnsBinderConfiguration {
-
-    @Bean
-    @ConditionalOnMissingBean(AmazonSNSAsync.class)
-    public AmazonSNSAsync amazonSNS(AWSCredentialsProvider awsCredentialsProvider, RegionProvider regionProvider) {
-        AmazonSNSAsyncClientBuilder builder = AmazonSNSAsyncClientBuilder.standard();
-        builder.setCredentials(awsCredentialsProvider);
-        builder.setRegion(regionProvider.getRegion().getName());
-        return builder.build();
-    }
 
     @Bean
     public SnsStreamProvisioner provisioningProvider(AmazonSNS amazonSNS, ResourceIdResolver resourceIdResolver) {
