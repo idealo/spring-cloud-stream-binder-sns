@@ -33,7 +33,10 @@ public class SnsBinderHealthIndicator extends AbstractHealthIndicator {
     @Override
     protected void doHealthCheck(Health.Builder builder) {
 
-        final List<String> topicList = bindingServiceProperties.getBindings().values().stream().map(bindingProperties -> bindingProperties.getDestination()).collect(toList());
+        final List<String> topicList = bindingServiceProperties.getBindings().values().stream()
+                .filter(bindingProperties -> "sns".equalsIgnoreCase(bindingProperties.getBinder()))
+                .map(bindingProperties -> bindingProperties.getDestination())
+                .collect(toList());
 
         if (!topicsAreReachable(topicList)) {
             builder.down().withDetail("SNS", "topic is not reachable");
