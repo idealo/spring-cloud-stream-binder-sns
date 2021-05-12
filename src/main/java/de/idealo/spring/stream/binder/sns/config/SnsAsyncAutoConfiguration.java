@@ -14,7 +14,6 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.services.sns.AmazonSNSAsync;
 import com.amazonaws.services.sns.AmazonSNSAsyncClient;
-
 import io.awspring.cloud.autoconfigure.messaging.SnsProperties;
 import io.awspring.cloud.context.annotation.ConditionalOnMissingAmazonClient;
 import io.awspring.cloud.core.config.AmazonWebserviceClientFactoryBean;
