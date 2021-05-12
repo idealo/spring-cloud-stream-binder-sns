@@ -52,9 +52,7 @@ public class SnsBinderHealthIndicator extends AbstractHealthIndicator {
             final ListTopicsResult listTopicsResult = this.snsMessageHandlerBinder.getAmazonSNS().listTopics();
             final List<String> actualTopicList = listTopicsResult.getTopics().stream().map(topic -> extractTopicName(topic.getTopicArn())).collect(toList());
 
-            Collections.sort(expectedTopicList);
-            Collections.sort(actualTopicList);
-            return expectedTopicList.equals(actualTopicList);
+            return actualTopicList.containsAll(expectedTopicList);
         } catch (SdkClientException e) {
             LOGGER.error("SNS is not reachable", e);
             return false;
