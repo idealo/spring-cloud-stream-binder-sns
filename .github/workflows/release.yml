@@ -32,6 +32,7 @@ jobs:
 
       - name: Create new release
         uses: cycjimmy/semantic-release-action@v2
+        id: semantic
         with:
           extra_plugins: |
             @semantic-release/git
@@ -41,6 +42,7 @@ jobs:
 
       - name: Set up Apache Maven Central
         uses: actions/setup-java@v2
+        if: steps.semantic.outputs.new_release_published == 'true'
         with:
           distribution: adopt
           java-version: 11
@@ -51,6 +53,7 @@ jobs:
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
       - name: Publish to Apache Maven Central
+        if: steps.semantic.outputs.new_release_published == 'true'
         run: mvn -B -ntp deploy -DskipTests -P maven-central
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
@@ -58,6 +61,7 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
       - name: Analyze with SonarCloud
+        if: steps.semantic.outputs.new_release_published == 'true'
         run: mvn -B -ntp org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
