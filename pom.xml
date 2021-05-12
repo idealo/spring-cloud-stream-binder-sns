@@ -47,6 +47,10 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <spring.cloud-version>2020.0.2</spring.cloud-version>
+
+        <sonar.projectKey>idealo_spring-cloud-stream-binder-sns</sonar.projectKey>
+        <sonar.organization>idealo</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
     <dependencyManagement>
