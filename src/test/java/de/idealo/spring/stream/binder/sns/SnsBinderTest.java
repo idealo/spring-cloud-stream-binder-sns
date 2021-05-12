@@ -2,10 +2,7 @@ package de.idealo.spring.stream.binder.sns;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SNS;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
 
-import java.time.Duration;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -13,18 +10,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.boot.actuate.health.Status;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
-import org.springframework.context.annotation.Primary;
-import org.springframework.core.annotation.Order;
-import org.springframework.integration.support.MessageBuilder;
-import org.springframework.messaging.Message;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -32,12 +23,8 @@ import org.testcontainers.utility.DockerImageName;
 
 import com.amazonaws.services.sns.AmazonSNSAsync;
 import com.amazonaws.services.sns.AmazonSNSAsyncClientBuilder;
-import com.amazonaws.services.sqs.AmazonSQSAsync;
-import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
-import reactor.test.StepVerifier;
 
 import de.idealo.spring.stream.binder.sns.config.SnsAsyncAutoConfiguration;
 

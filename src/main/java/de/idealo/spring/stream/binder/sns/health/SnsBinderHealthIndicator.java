@@ -2,11 +2,8 @@ package de.idealo.spring.stream.binder.sns.health;
 
 import static java.util.stream.Collectors.toList;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Spliterators;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +14,6 @@ import org.springframework.util.Assert;
 
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.sns.model.ListTopicsResult;
-import com.amazonaws.services.sns.model.Topic;
 
 import de.idealo.spring.stream.binder.sns.SnsMessageHandlerBinder;
 
@@ -27,7 +23,6 @@ public class SnsBinderHealthIndicator extends AbstractHealthIndicator {
 
     private final SnsMessageHandlerBinder snsMessageHandlerBinder;
     private final BindingServiceProperties bindingServiceProperties;
-    private String topicArn;
 
     public SnsBinderHealthIndicator(final SnsMessageHandlerBinder snsMessageHandlerBinder, final BindingServiceProperties bindingServiceProperties) {
         Assert.notNull(snsMessageHandlerBinder, "SnsMessageHandlerBinder must not be null");

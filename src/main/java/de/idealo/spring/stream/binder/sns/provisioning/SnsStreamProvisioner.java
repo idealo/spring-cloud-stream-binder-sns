@@ -9,7 +9,6 @@ import org.springframework.cloud.stream.provisioning.ProvisioningProvider;
 import org.springframework.messaging.core.DestinationResolver;
 
 import com.amazonaws.services.sns.AmazonSNS;
-
 import io.awspring.cloud.core.env.ResourceIdResolver;
 import io.awspring.cloud.messaging.support.destination.DynamicTopicDestinationResolver;
 
