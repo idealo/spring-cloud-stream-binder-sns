@@ -59,6 +59,20 @@ class SnsBinderHealthIndicatorTest {
     }
 
     @Test
+    void reportsTrueWhenMoreTopicsThenDestinationsArePresent() {
+        when(amazonSNS.listTopics()).thenReturn(new ListTopicsResult().withTopics(new Topic().withTopicArn("blablabla:somemorebla:topicName1")), new ListTopicsResult().withTopics(new Topic().withTopicArn("blablabla:somemorebla:topicName2")));
+        final BindingProperties binderProperties = new BindingProperties();
+        binderProperties.setDestination("topicName1");
+        when(bindingServiceProperties.getBindings()).thenReturn(Collections.singletonMap("doesn't matter", binderProperties));
+
+        Health.Builder builder = new Health.Builder();
+
+        healthIndicator.doHealthCheck(builder);
+
+        assertThat(builder.build().getStatus()).isEqualTo(Status.UP);
+    }
+
+    @Test
     void reportsFalseWhenAnExpectedTopicIsNotPresent() {
         when(amazonSNS.listTopics()).thenReturn(new ListTopicsResult().withTopics(new Topic().withTopicArn("blablabla:somemorebla:wrongTopicName")));
         final BindingProperties binderProperties = new BindingProperties();

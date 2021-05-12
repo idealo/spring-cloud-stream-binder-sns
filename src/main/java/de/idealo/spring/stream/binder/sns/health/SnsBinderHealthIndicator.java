@@ -2,7 +2,6 @@ package de.idealo.spring.stream.binder.sns.health;
 
 import static java.util.stream.Collectors.toList;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -33,16 +32,12 @@ public class SnsBinderHealthIndicator extends AbstractHealthIndicator {
 
     @Override
     protected void doHealthCheck(Health.Builder builder) {
-        boolean allListenersRunning = true;
 
         final List<String> topicList = bindingServiceProperties.getBindings().values().stream().map(bindingProperties -> bindingProperties.getDestination()).collect(toList());
 
         if (!topicsAreReachable(topicList)) {
             builder.down().withDetail("SNS", "topic is not reachable");
-            allListenersRunning = false;
-        }
-
-        if (allListenersRunning) {
+        } else {
             builder.up();
         }
     }
