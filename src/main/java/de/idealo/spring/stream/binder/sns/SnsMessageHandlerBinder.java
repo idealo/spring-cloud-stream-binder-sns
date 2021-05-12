@@ -26,6 +26,10 @@ public class SnsMessageHandlerBinder
         this.amazonSNS = amazonSNS;
     }
 
+    public AmazonSNSAsync getAmazonSNS() {
+        return amazonSNS;
+    }
+
     @Override
     protected MessageHandler createProducerMessageHandler(ProducerDestination destination, ProducerProperties producerProperties, MessageChannel errorChannel) throws Exception {
         SnsProducerDestination snsDestination = (SnsProducerDestination) destination;
@@ -45,5 +49,4 @@ public class SnsMessageHandlerBinder
     protected void postProcessOutputChannel(MessageChannel outputChannel, ProducerProperties producerProperties) {
         ((AbstractMessageChannel) outputChannel).addInterceptor(new SnsPayloadConvertingChannelInterceptor());
     }
-
 }
