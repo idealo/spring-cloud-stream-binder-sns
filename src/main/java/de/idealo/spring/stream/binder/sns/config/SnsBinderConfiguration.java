@@ -1,5 +1,7 @@
 package de.idealo.spring.stream.binder.sns.config;
 
+import java.util.Optional;
+
 import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -11,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSAsync;
+
 import io.awspring.cloud.core.env.ResourceIdResolver;
 
 import de.idealo.spring.stream.binder.sns.SnsMessageHandlerBinder;
@@ -22,8 +25,8 @@ import de.idealo.spring.stream.binder.sns.provisioning.SnsStreamProvisioner;
 public class SnsBinderConfiguration {
 
     @Bean
-    public SnsStreamProvisioner provisioningProvider(AmazonSNS amazonSNS, ResourceIdResolver resourceIdResolver) {
-        return new SnsStreamProvisioner(amazonSNS, resourceIdResolver);
+    public SnsStreamProvisioner provisioningProvider(AmazonSNS amazonSNS, Optional<ResourceIdResolver> resourceIdResolver) {
+        return new SnsStreamProvisioner(amazonSNS, resourceIdResolver.orElse(null));
     }
 
     @Bean
