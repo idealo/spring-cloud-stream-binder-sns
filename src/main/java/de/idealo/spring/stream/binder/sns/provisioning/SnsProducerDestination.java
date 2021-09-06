@@ -19,7 +19,7 @@ public class SnsProducerDestination implements ProducerDestination {
 
     @Override
     public String getNameForPartition(final int partition) {
-        throw new UnsupportedOperationException("Partitioning is not supported for SQS");
+        throw new UnsupportedOperationException("Partitioning is not supported for SNS");
     }
 
     public String getArn() {
