@@ -1,7 +1,7 @@
 package de.idealo.spring.stream.binder.sns.provisioning;
 
-import org.springframework.cloud.stream.binder.ConsumerProperties;
-import org.springframework.cloud.stream.binder.ProducerProperties;
+import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
+import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.provisioning.ConsumerDestination;
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
 import org.springframework.cloud.stream.provisioning.ProvisioningException;
@@ -12,7 +12,10 @@ import com.amazonaws.services.sns.AmazonSNS;
 import io.awspring.cloud.core.env.ResourceIdResolver;
 import io.awspring.cloud.messaging.support.destination.DynamicTopicDestinationResolver;
 
-public class SnsStreamProvisioner implements ProvisioningProvider<ConsumerProperties, ProducerProperties> {
+import de.idealo.spring.stream.binder.sns.properties.SnsConsumerProperties;
+import de.idealo.spring.stream.binder.sns.properties.SnsProducerProperties;
+
+public class SnsStreamProvisioner implements ProvisioningProvider<ExtendedConsumerProperties<SnsConsumerProperties>, ExtendedProducerProperties<SnsProducerProperties>> {
 
     private final DestinationResolver<String> destinationResolver;
 
@@ -21,13 +24,13 @@ public class SnsStreamProvisioner implements ProvisioningProvider<ConsumerProper
     }
 
     @Override
-    public ProducerDestination provisionProducerDestination(String name, ProducerProperties properties) {
+    public ProducerDestination provisionProducerDestination(String name, ExtendedProducerProperties<SnsProducerProperties> properties) {
         String arn = this.destinationResolver.resolveDestination(name);
         return new SnsProducerDestination(name, arn);
     }
 
     @Override
-    public ConsumerDestination provisionConsumerDestination(String name, String group, ConsumerProperties properties) {
+    public ConsumerDestination provisionConsumerDestination(String name, String group, ExtendedConsumerProperties<SnsConsumerProperties> properties) throws ProvisioningException {
         throw new ProvisioningException("not supported");
     }
 }
