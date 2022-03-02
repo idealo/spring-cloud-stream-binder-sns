@@ -6,7 +6,6 @@ import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnable
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.stream.binder.Binder;
 import org.springframework.cloud.stream.config.BindingServiceProperties;
 import org.springframework.context.annotation.Bean;
@@ -14,16 +13,15 @@ import org.springframework.context.annotation.Configuration;
 
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSAsync;
+
 import io.awspring.cloud.core.env.ResourceIdResolver;
 
 import de.idealo.spring.stream.binder.sns.SnsMessageHandlerBinder;
 import de.idealo.spring.stream.binder.sns.health.SnsBinderHealthIndicator;
-import de.idealo.spring.stream.binder.sns.properties.SnsExtendedBindingProperties;
 import de.idealo.spring.stream.binder.sns.provisioning.SnsStreamProvisioner;
 
 @Configuration
 @ConditionalOnMissingBean(Binder.class)
-@EnableConfigurationProperties({ SnsExtendedBindingProperties.class })
 public class SnsBinderConfiguration {
 
     @Bean
@@ -32,8 +30,8 @@ public class SnsBinderConfiguration {
     }
 
     @Bean
-    public SnsMessageHandlerBinder snsMessageHandlerBinder(AmazonSNSAsync amazonSNS, SnsStreamProvisioner snsStreamProvisioner, SnsExtendedBindingProperties extendedBindingProperties) {
-        return new SnsMessageHandlerBinder(amazonSNS, snsStreamProvisioner, extendedBindingProperties);
+    public SnsMessageHandlerBinder snsMessageHandlerBinder(AmazonSNSAsync amazonSNS, SnsStreamProvisioner snsStreamProvisioner) {
+        return new SnsMessageHandlerBinder(amazonSNS, snsStreamProvisioner);
     }
 
     @Configuration

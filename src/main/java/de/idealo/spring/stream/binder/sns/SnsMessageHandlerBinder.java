@@ -1,10 +1,8 @@
 package de.idealo.spring.stream.binder.sns;
 
 import org.springframework.cloud.stream.binder.AbstractMessageChannelBinder;
-import org.springframework.cloud.stream.binder.BinderSpecificPropertiesProvider;
-import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
-import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
-import org.springframework.cloud.stream.binder.ExtendedPropertiesBinder;
+import org.springframework.cloud.stream.binder.ConsumerProperties;
+import org.springframework.cloud.stream.binder.ProducerProperties;
 import org.springframework.cloud.stream.provisioning.ConsumerDestination;
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
 import org.springframework.integration.aws.outbound.SnsMessageHandler;
@@ -15,23 +13,17 @@ import org.springframework.messaging.MessageHandler;
 
 import com.amazonaws.services.sns.AmazonSNSAsync;
 
-import de.idealo.spring.stream.binder.sns.properties.SnsConsumerProperties;
-import de.idealo.spring.stream.binder.sns.properties.SnsExtendedBindingProperties;
-import de.idealo.spring.stream.binder.sns.properties.SnsProducerProperties;
 import de.idealo.spring.stream.binder.sns.provisioning.SnsProducerDestination;
 import de.idealo.spring.stream.binder.sns.provisioning.SnsStreamProvisioner;
 
 public class SnsMessageHandlerBinder
-        extends AbstractMessageChannelBinder<ExtendedConsumerProperties<SnsConsumerProperties>, ExtendedProducerProperties<SnsProducerProperties>, SnsStreamProvisioner>
-        implements ExtendedPropertiesBinder<MessageChannel, SnsConsumerProperties, SnsProducerProperties> {
+        extends AbstractMessageChannelBinder<ConsumerProperties, ProducerProperties, SnsStreamProvisioner> {
 
     private final AmazonSNSAsync amazonSNS;
-    private SnsExtendedBindingProperties extendedBindingProperties;
 
-    public SnsMessageHandlerBinder(AmazonSNSAsync amazonSNS, SnsStreamProvisioner provisioningProvider, SnsExtendedBindingProperties extendedBindingProperties) {
+    public SnsMessageHandlerBinder(AmazonSNSAsync amazonSNS, SnsStreamProvisioner provisioningProvider) {
         super(new String[0], provisioningProvider);
         this.amazonSNS = amazonSNS;
-        this.extendedBindingProperties = extendedBindingProperties;
     }
 
     public AmazonSNSAsync getAmazonSNS() {
@@ -39,44 +31,22 @@ public class SnsMessageHandlerBinder
     }
 
     @Override
-    protected MessageHandler createProducerMessageHandler(ProducerDestination destination, ExtendedProducerProperties<SnsProducerProperties> producerProperties, MessageChannel errorChannel) throws Exception {
+    protected MessageHandler createProducerMessageHandler(ProducerDestination destination, ProducerProperties producerProperties, MessageChannel errorChannel) throws Exception {
         SnsProducerDestination snsDestination = (SnsProducerDestination) destination;
         SnsMessageHandler snsMessageHandler = new SnsMessageHandler(amazonSNS);
         snsMessageHandler.setTopicArn(snsDestination.getArn());
         snsMessageHandler.setFailureChannel(errorChannel);
         snsMessageHandler.setBeanFactory(getBeanFactory());
-        snsMessageHandler.setSync(producerProperties.getExtension().isSync());
         return snsMessageHandler;
     }
 
     @Override
-    protected MessageProducer createConsumerEndpoint(ConsumerDestination destination, String group, ExtendedConsumerProperties<SnsConsumerProperties> properties) throws Exception {
+    protected MessageProducer createConsumerEndpoint(ConsumerDestination destination, String group, ConsumerProperties properties) throws Exception {
         throw new UnsupportedOperationException("Consuming from SNS is not supported");
     }
 
     @Override
-    protected void postProcessOutputChannel(MessageChannel outputChannel, ExtendedProducerProperties<SnsProducerProperties> producerProperties) {
+    protected void postProcessOutputChannel(MessageChannel outputChannel, ProducerProperties producerProperties) {
         ((AbstractMessageChannel) outputChannel).addInterceptor(new SnsPayloadConvertingChannelInterceptor());
     }
-
-    @Override
-    public SnsConsumerProperties getExtendedConsumerProperties(String channelName) {
-        return extendedBindingProperties.getExtendedConsumerProperties(channelName);
-    }
-
-    @Override
-    public SnsProducerProperties getExtendedProducerProperties(String channelName) {
-        return extendedBindingProperties.getExtendedProducerProperties(channelName);
-    }
-
-    @Override
-    public String getDefaultsPrefix() {
-        return extendedBindingProperties.getDefaultsPrefix();
-    }
-
-    @Override
-    public Class<? extends BinderSpecificPropertiesProvider> getExtendedPropertiesEntryClass() {
-        return extendedBindingProperties.getExtendedPropertiesEntryClass();
-    }
-
 }
