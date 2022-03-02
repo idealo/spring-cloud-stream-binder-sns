@@ -48,5 +48,4 @@ public class SnsAsyncAutoConfiguration {
         Optional.ofNullable(properties.getEndpoint()).ifPresent(clientFactoryBean::setCustomEndpoint);
         return clientFactoryBean;
     }
-
 }
