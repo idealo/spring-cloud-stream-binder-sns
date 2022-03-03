@@ -15,7 +15,6 @@ import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
@@ -61,9 +60,6 @@ class SnsBinderTest {
     @Autowired
     private HealthEndpoint healthEndpoint;
 
-    @Autowired
-    private StreamBridge streamBridge;
-
     @BeforeAll
     static void beforeAll() throws Exception {
         localStack.execInContainer("awslocal", "sns", "create-topic", "--name", "topic1");
@@ -83,7 +79,7 @@ class SnsBinderTest {
         String topicArn = amazonSNS.listTopics().getTopics().get(0).getTopicArn();
         amazonSNS.subscribe(topicArn, "sqs", queueUrl);
 
-        streamBridge.send("output-out-0", "hello");
+        sink.tryEmitNext("hello");
 
         await().untilAsserted(() -> {
             ReceiveMessageResult message = amazonSQS.receiveMessage(queueUrl);
