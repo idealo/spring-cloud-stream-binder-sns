@@ -9,7 +9,7 @@ spring-cloud-stream-binder-sns lets you use [Spring Cloud Stream](https://spring
     <dependency>
         <groupId>de.idealo.spring</groupId>
         <artifactId>spring-cloud-stream-binder-sns</artifactId>
-        <version>1.0.3</version>
+        <version>1.4.3</version>
     </dependency>
 </dependencies>
 ```
@@ -17,6 +17,11 @@ spring-cloud-stream-binder-sns lets you use [Spring Cloud Stream](https://spring
 ## Usage
 
 With the library in your dependencies you can configure your Spring Cloud Stream bindings as usual. The type name for this binder is `sns`. There are no additional configuration options at the moment. The destination needs to match the topic name, the specific ARN will be looked up from the available topics in the account.
+
+You may also provide additional configuration options:
+
+- **Producers**
+    - **confirmAckChannel** - A channel to which to send positive delivery acknowledgments (aka publisher confirms). If the channel does not exist, a DirectChannel is registered with this name.  
 
 **Example Configuration:**
 
@@ -27,6 +32,10 @@ spring:
       bindings:
         someFunction-out-0:
           destination: topic-name
+      sns:
+        default:
+          producer:
+            confirmAckChannel: ack-channel-name
 ```
 
 You may also provide your own beans of `AmazonSNSAsync` to override those that are created by [spring-cloud-aws-autoconfigure](https://github.com/spring-cloud/spring-cloud-aws/tree/master/spring-cloud-aws-autoconfigure).
