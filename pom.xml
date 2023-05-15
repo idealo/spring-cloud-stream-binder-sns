@@ -48,7 +48,7 @@
         <maven.compiler.target>8</maven.compiler.target>
         <spring.cloud-version>2022.0.2</spring.cloud-version>
         <spring.boot-version>3.0.6</spring.boot-version>
-        <testcontainers.version>1.17.6</testcontainers.version>
+        <testcontainers.version>1.18.1</testcontainers.version>
 
         <sonar.projectKey>idealo_spring-cloud-stream-binder-sns</sonar.projectKey>
         <sonar.organization>idealo</sonar.organization>
