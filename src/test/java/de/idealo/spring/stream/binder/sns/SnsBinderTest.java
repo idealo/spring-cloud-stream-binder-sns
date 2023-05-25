@@ -1,12 +1,14 @@
 package de.idealo.spring.stream.binder.sns;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SNS;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
-import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
-
-import java.util.function.Supplier;
-
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.sns.AmazonSNSAsync;
+import com.amazonaws.services.sns.AmazonSNSAsyncClientBuilder;
+import com.amazonaws.services.sqs.AmazonSQSAsync;
+import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
+import com.amazonaws.services.sqs.model.ReceiveMessageResult;
+import de.idealo.spring.stream.binder.sns.config.SnsAsyncAutoConfiguration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,16 +24,15 @@ import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-
-import com.amazonaws.services.sns.AmazonSNSAsync;
-import com.amazonaws.services.sns.AmazonSNSAsyncClientBuilder;
-import com.amazonaws.services.sqs.AmazonSQSAsync;
-import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
-import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-import de.idealo.spring.stream.binder.sns.config.SnsAsyncAutoConfiguration;
+import java.util.function.Supplier;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SNS;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
+import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 @Testcontainers
 @SpringBootTest(properties = {
@@ -93,17 +94,27 @@ class SnsBinderTest {
 
         @Bean
         AmazonSNSAsync amazonSNS() {
+            AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration(
+                    localStack.getEndpointOverride(SNS).toString(),
+                    localStack.getRegion()
+            );
+            AWSStaticCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(new BasicAWSCredentials(localStack.getAccessKey(), localStack.getSecretKey()));
             return AmazonSNSAsyncClientBuilder.standard()
-                    .withEndpointConfiguration(localStack.getEndpointConfiguration(SNS))
-                    .withCredentials(localStack.getDefaultCredentialsProvider())
+                    .withEndpointConfiguration(endpointConfiguration)
+                    .withCredentials(credentialsProvider)
                     .build();
         }
 
         @Bean
         AmazonSQSAsync amazonSQS() {
+            AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration(
+                    localStack.getEndpointOverride(SQS).toString(),
+                    localStack.getRegion()
+            );
+            AWSStaticCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(new BasicAWSCredentials(localStack.getAccessKey(), localStack.getSecretKey()));
             return AmazonSQSAsyncClientBuilder.standard()
-                    .withEndpointConfiguration(localStack.getEndpointConfiguration(SQS))
-                    .withCredentials(localStack.getDefaultCredentialsProvider())
+                    .withEndpointConfiguration(endpointConfiguration)
+                    .withCredentials(credentialsProvider)
                     .build();
         }
 
