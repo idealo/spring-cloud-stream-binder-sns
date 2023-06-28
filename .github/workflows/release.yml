@@ -14,6 +14,7 @@ jobs:
         with:
           java-version: 17
           distribution: adopt
+          cache: maven
 
       - name: Cache SonarCloud packages
         uses: actions/cache@v3.3.1
@@ -21,14 +22,6 @@ jobs:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
-
-      - name: Cache local Maven repository
-        uses: actions/cache@v3.3.1
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
 
       - name: Create new release
         uses: cycjimmy/semantic-release-action@v3
