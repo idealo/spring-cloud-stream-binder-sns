@@ -3,16 +3,18 @@ package de.idealo.spring.stream.binder.sns.health;
 import static java.util.stream.Collectors.toList;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
+import org.springframework.cloud.stream.config.BindingProperties;
 import org.springframework.cloud.stream.config.BindingServiceProperties;
 import org.springframework.util.Assert;
 
-import com.amazonaws.SdkClientException;
-import com.amazonaws.services.sns.model.ListTopicsResult;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
+import software.amazon.awssdk.services.sns.model.ListTopicsResponse;
 
 import de.idealo.spring.stream.binder.sns.SnsMessageHandlerBinder;
 
@@ -35,7 +37,7 @@ public class SnsBinderHealthIndicator extends AbstractHealthIndicator {
 
         final List<String> topicList = bindingServiceProperties.getBindings().values().stream()
                 .filter(bindingProperties -> "sns".equalsIgnoreCase(bindingProperties.getBinder()))
-                .map(bindingProperties -> bindingProperties.getDestination())
+                .map(BindingProperties::getDestination)
                 .collect(toList());
 
         if (!topicsAreReachable(topicList)) {
@@ -47,12 +49,18 @@ public class SnsBinderHealthIndicator extends AbstractHealthIndicator {
 
     private boolean topicsAreReachable(final List<String> expectedTopicList) {
         try {
-            final ListTopicsResult listTopicsResult = this.snsMessageHandlerBinder.getAmazonSNS().listTopics();
-            final List<String> actualTopicList = listTopicsResult.getTopics().stream().map(topic -> extractTopicName(topic.getTopicArn())).collect(toList());
+            final ListTopicsResponse listTopicsResult = this.snsMessageHandlerBinder.getAmazonSNS().listTopics().get();
+            final List<String> actualTopicList = listTopicsResult.topics().stream().map(topic -> extractTopicName(topic.topicArn())).toList();
 
             return actualTopicList.containsAll(expectedTopicList);
-        } catch (SdkClientException e) {
+        } catch (AwsServiceException e) {
             LOGGER.error("SNS is not reachable", e);
+            return false;
+        } catch (ExecutionException e) {
+            LOGGER.error("SNS health check failed", e);
+            return false;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             return false;
         }
     }
