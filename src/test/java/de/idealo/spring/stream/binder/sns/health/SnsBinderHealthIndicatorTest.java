@@ -1,6 +1,8 @@
 package de.idealo.spring.stream.binder.sns.health;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
@@ -127,15 +129,13 @@ class SnsBinderHealthIndicatorTest {
     }
 
     @Test
-    void reportsFalseIfCannotListTopics() {
+    void checkThatHealthIndicatorDontCatchAnyExceptions() {
         when(amazonSNS.listTopics()).thenThrow(AuthorizationErrorException.class);
 
-        Health.Builder builder = new Health.Builder();
-
-        healthIndicator.doHealthCheck(builder);
-
-        Health health = builder.build();
-        assertThat(health.getStatus()).isEqualTo(Status.DOWN);
-        assertThat(health.getDetails()).containsKey("SNS");
+        AuthorizationErrorException thrown = assertThrows(
+                "Expected doHealthCheck(new Health.Builder()) to throw, but it didn't",
+                AuthorizationErrorException.class,
+                () -> healthIndicator.doHealthCheck(new Health.Builder())
+        );
     }
 }
