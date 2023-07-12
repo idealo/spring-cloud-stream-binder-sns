@@ -52,7 +52,7 @@ class SnsBinderTest {
     @Container
     private static final LocalStackContainer localStack = new LocalStackContainer(DockerImageName.parse("localstack/localstack:0.12.10"))
             .withServices(SNS, SQS)
-            .withEnv("DEFAULT_REGION", "eu-central-1");
+            .withEnv("AWS_REGION", "eu-central-1");
 
     private final static Sinks.Many<String> sink = Sinks.many().multicast().onBackpressureBuffer();
 
