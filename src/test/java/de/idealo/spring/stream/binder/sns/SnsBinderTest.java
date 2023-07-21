@@ -37,7 +37,6 @@ import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 @Testcontainers
 @SpringBootTest(properties = {
         "cloud.aws.stack.auto=false",
-        "cloud.aws.region.static=eu-central-1",
         "spring.cloud.stream.binders.sns.type=sns",
         "spring.cloud.stream.bindings.output-out-0.destination=topic1",
         "spring.cloud.stream.bindings.output-out-0.binder=sns",
