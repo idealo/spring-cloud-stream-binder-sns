@@ -1,8 +1,5 @@
 package de.idealo.spring.stream.binder.sns.config;
 
-import de.idealo.spring.stream.binder.sns.properties.SnsExtendedBindingProperties;
-import java.util.Optional;
-
 import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -13,13 +10,11 @@ import org.springframework.cloud.stream.config.BindingServiceProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.amazonaws.services.sns.AmazonSNS;
-import com.amazonaws.services.sns.AmazonSNSAsync;
-
-import io.awspring.cloud.core.env.ResourceIdResolver;
+import software.amazon.awssdk.services.sns.SnsAsyncClient;
 
 import de.idealo.spring.stream.binder.sns.SnsMessageHandlerBinder;
 import de.idealo.spring.stream.binder.sns.health.SnsBinderHealthIndicator;
+import de.idealo.spring.stream.binder.sns.properties.SnsExtendedBindingProperties;
 import de.idealo.spring.stream.binder.sns.provisioning.SnsStreamProvisioner;
 
 @Configuration
@@ -28,14 +23,14 @@ import de.idealo.spring.stream.binder.sns.provisioning.SnsStreamProvisioner;
 public class SnsBinderConfiguration {
 
     @Bean
-    public SnsStreamProvisioner provisioningProvider(AmazonSNS amazonSNS, Optional<ResourceIdResolver> resourceIdResolver) {
-        return new SnsStreamProvisioner(amazonSNS, resourceIdResolver.orElse(null));
+    public SnsStreamProvisioner provisioningProvider(SnsAsyncClient amazonSNS) {
+        return new SnsStreamProvisioner(amazonSNS);
     }
 
     @Bean
-    public SnsMessageHandlerBinder snsMessageHandlerBinder(AmazonSNSAsync amazonSNS,
-                                                           SnsStreamProvisioner snsStreamProvisioner,
-                                                           SnsExtendedBindingProperties snsExtendedBindingProperties) {
+    public SnsMessageHandlerBinder snsMessageHandlerBinder(SnsAsyncClient amazonSNS,
+            SnsStreamProvisioner snsStreamProvisioner,
+            SnsExtendedBindingProperties snsExtendedBindingProperties) {
         return new SnsMessageHandlerBinder(amazonSNS, snsStreamProvisioner, snsExtendedBindingProperties);
     }
 

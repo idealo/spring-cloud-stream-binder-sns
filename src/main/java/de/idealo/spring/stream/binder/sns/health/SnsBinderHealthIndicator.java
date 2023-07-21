@@ -1,24 +1,18 @@
 package de.idealo.spring.stream.binder.sns.health;
 
-import static java.util.stream.Collectors.toList;
-
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.idealo.spring.stream.binder.sns.SnsMessageHandlerBinder;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
+import org.springframework.cloud.stream.config.BindingProperties;
 import org.springframework.cloud.stream.config.BindingServiceProperties;
 import org.springframework.util.Assert;
+import software.amazon.awssdk.services.sns.model.ListTopicsResponse;
+import software.amazon.awssdk.services.sns.model.Topic;
 
-import com.amazonaws.SdkClientException;
-import com.amazonaws.services.sns.model.ListTopicsResult;
-
-import de.idealo.spring.stream.binder.sns.SnsMessageHandlerBinder;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SnsBinderHealthIndicator extends AbstractHealthIndicator {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SnsBinderHealthIndicator.class);
 
     private final SnsMessageHandlerBinder snsMessageHandlerBinder;
     private final BindingServiceProperties bindingServiceProperties;
@@ -32,32 +26,24 @@ public class SnsBinderHealthIndicator extends AbstractHealthIndicator {
 
     @Override
     protected void doHealthCheck(Health.Builder builder) {
+        var availableTopics = snsMessageHandlerBinder.getAmazonSNS().listTopics()
+                .thenApply(ListTopicsResponse::topics)
+                .thenApply(List::stream)
+                .join()
+                .map(Topic::topicArn)
+                .map(topicArn -> topicArn.substring(topicArn.lastIndexOf(':') + 1))
+                .collect(Collectors.toSet());
 
-        final List<String> topicList = bindingServiceProperties.getBindings().values().stream()
+        var availableDeclaredTopics = bindingServiceProperties.getBindings().values().stream()
                 .filter(bindingProperties -> "sns".equalsIgnoreCase(bindingProperties.getBinder()))
-                .map(bindingProperties -> bindingProperties.getDestination())
-                .collect(toList());
+                .map(BindingProperties::getDestination)
+                .allMatch(declaredTopic -> availableTopics.contains(declaredTopic));
 
-        if (!topicsAreReachable(topicList)) {
-            builder.down().withDetail("SNS", "topic is not reachable");
-        } else {
+        if (availableDeclaredTopics) {
             builder.up();
+        } else {
+            builder.down().withDetail("SNS", "topic is not reachable");
         }
     }
 
-    private boolean topicsAreReachable(final List<String> expectedTopicList) {
-        try {
-            final ListTopicsResult listTopicsResult = this.snsMessageHandlerBinder.getAmazonSNS().listTopics();
-            final List<String> actualTopicList = listTopicsResult.getTopics().stream().map(topic -> extractTopicName(topic.getTopicArn())).collect(toList());
-
-            return actualTopicList.containsAll(expectedTopicList);
-        } catch (SdkClientException e) {
-            LOGGER.error("SNS is not reachable", e);
-            return false;
-        }
-    }
-
-    private String extractTopicName(final String topicArn) {
-        return topicArn.substring(topicArn.lastIndexOf(':') + 1);
-    }
 }

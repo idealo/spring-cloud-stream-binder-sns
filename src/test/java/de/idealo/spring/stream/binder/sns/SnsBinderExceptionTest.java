@@ -1,13 +1,12 @@
 package de.idealo.spring.stream.binder.sns;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.services.sns.AmazonSNSAsync;
-import com.amazonaws.services.sns.AmazonSNSAsyncClientBuilder;
-import com.amazonaws.services.sqs.AmazonSQSAsync;
-import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
-import de.idealo.spring.stream.binder.sns.config.SnsAsyncAutoConfiguration;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SNS;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
+
+import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,18 +22,21 @@ import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.sns.SnsAsyncClient;
+import software.amazon.awssdk.services.sns.model.DeleteTopicRequest;
+import software.amazon.awssdk.services.sqs.SqsAsyncClient;
 
-import java.util.function.Supplier;
-
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SNS;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
+import de.idealo.spring.stream.binder.sns.config.SnsAsyncAutoConfiguration;
 
 @Testcontainers
 @SpringBootTest(properties = {
-        "cloud.aws.stack.auto=false",
+        "spring.cloud.aws.region.static=eu-central-1",
         "spring.cloud.stream.binders.sns.type=sns",
         "spring.cloud.stream.bindings.output-out-0.destination=topic1",
         "spring.cloud.stream.bindings.output-out-0.binder=sns",
@@ -52,7 +54,7 @@ class SnsBinderExceptionTest {
     private StreamBridge streamBridge;
 
     @Autowired
-    private AmazonSNSAsync amazonSNS;
+    private SnsAsyncClient amazonSNS;
 
     @BeforeAll
     static void beforeAll() throws Exception {
@@ -60,8 +62,8 @@ class SnsBinderExceptionTest {
     }
 
     @BeforeEach
-    void deleteAllTopicsToProduceExceptions() {
-        amazonSNS.listTopics().getTopics().forEach(x -> amazonSNS.deleteTopic(x.getTopicArn()));
+    void deleteAllTopicsToProduceExceptions() throws ExecutionException, InterruptedException {
+        amazonSNS.listTopics().get().topics().forEach(x -> amazonSNS.deleteTopic(DeleteTopicRequest.builder().topicArn(x.topicArn()).build()));
     }
 
     @Test
@@ -78,28 +80,20 @@ class SnsBinderExceptionTest {
     static class AwsConfig {
 
         @Bean
-        AmazonSNSAsync amazonSNS() {
-            AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration(
-                    localStack.getEndpointOverride(SNS).toString(),
-                    localStack.getRegion()
-            );
-            AWSStaticCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(new BasicAWSCredentials(localStack.getAccessKey(), localStack.getSecretKey()));
-            return AmazonSNSAsyncClientBuilder.standard()
-                    .withEndpointConfiguration(endpointConfiguration)
-                    .withCredentials(credentialsProvider)
+        SnsAsyncClient amazonSNS() {
+            return SnsAsyncClient.builder()
+                    .endpointOverride(localStack.getEndpointOverride(SNS))
+                    .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(localStack.getAccessKey(), localStack.getSecretKey())))
+                    .region(Region.EU_CENTRAL_1)
                     .build();
         }
 
         @Bean
-        AmazonSQSAsync amazonSQS() {
-            AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration(
-                    localStack.getEndpointOverride(SQS).toString(),
-                    localStack.getRegion()
-            );
-            AWSStaticCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(new BasicAWSCredentials(localStack.getAccessKey(), localStack.getSecretKey()));
-            return AmazonSQSAsyncClientBuilder.standard()
-                    .withEndpointConfiguration(endpointConfiguration)
-                    .withCredentials(credentialsProvider)
+        SqsAsyncClient amazonSQS() {
+            return SqsAsyncClient.builder()
+                    .endpointOverride(localStack.getEndpointOverride(SQS))
+                    .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(localStack.getAccessKey(), localStack.getSecretKey())))
+                    .region(Region.EU_CENTRAL_1)
                     .build();
         }
 
@@ -110,10 +104,10 @@ class SnsBinderExceptionTest {
     }
 
     @SpringBootApplication
-    @ComponentScan(basePackages = {"de.idealo.spring.stream.binder.sns.config"},
-            excludeFilters = {@ComponentScan.Filter(
+    @ComponentScan(basePackages = { "de.idealo.spring.stream.binder.sns.config" },
+            excludeFilters = { @ComponentScan.Filter(
                     type = FilterType.ASSIGNABLE_TYPE,
-                    value = {SnsAsyncAutoConfiguration.class})
+                    value = { SnsAsyncAutoConfiguration.class })
             })
     static class Application {
     }

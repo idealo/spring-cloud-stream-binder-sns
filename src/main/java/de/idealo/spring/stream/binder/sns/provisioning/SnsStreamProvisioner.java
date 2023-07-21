@@ -1,31 +1,32 @@
 package de.idealo.spring.stream.binder.sns.provisioning;
 
-import de.idealo.spring.stream.binder.sns.properties.SnsConsumerProperties;
-import de.idealo.spring.stream.binder.sns.properties.SnsProducerProperties;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.provisioning.ConsumerDestination;
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
 import org.springframework.cloud.stream.provisioning.ProvisioningException;
 import org.springframework.cloud.stream.provisioning.ProvisioningProvider;
-import org.springframework.messaging.core.DestinationResolver;
+import org.springframework.integration.aws.support.SnsAsyncTopicArnResolver;
 
-import com.amazonaws.services.sns.AmazonSNS;
-import io.awspring.cloud.core.env.ResourceIdResolver;
-import io.awspring.cloud.messaging.support.destination.DynamicTopicDestinationResolver;
+import io.awspring.cloud.sns.core.TopicArnResolver;
+import software.amazon.awssdk.arns.Arn;
+import software.amazon.awssdk.services.sns.SnsAsyncClient;
+
+import de.idealo.spring.stream.binder.sns.properties.SnsConsumerProperties;
+import de.idealo.spring.stream.binder.sns.properties.SnsProducerProperties;
 
 public class SnsStreamProvisioner implements ProvisioningProvider<ExtendedConsumerProperties<SnsConsumerProperties>, ExtendedProducerProperties<SnsProducerProperties>> {
 
-    private final DestinationResolver<String> destinationResolver;
+    private final TopicArnResolver destinationResolver;
 
-    public SnsStreamProvisioner(AmazonSNS amazonSNS, ResourceIdResolver resourceIdResolver) {
-        this.destinationResolver = new DynamicTopicDestinationResolver(amazonSNS, resourceIdResolver);
+    public SnsStreamProvisioner(SnsAsyncClient amazonSNS) {
+        this.destinationResolver = new SnsAsyncTopicArnResolver(amazonSNS);
     }
 
     @Override
     public ProducerDestination provisionProducerDestination(String name, ExtendedProducerProperties<SnsProducerProperties> properties) {
-        String arn = this.destinationResolver.resolveDestination(name);
-        return new SnsProducerDestination(name, arn);
+        Arn arn = this.destinationResolver.resolveTopicArn(name);
+        return new SnsProducerDestination(name, arn.resourceAsString());
     }
 
     @Override

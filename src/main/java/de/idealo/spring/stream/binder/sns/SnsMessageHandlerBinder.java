@@ -1,8 +1,5 @@
 package de.idealo.spring.stream.binder.sns;
 
-import de.idealo.spring.stream.binder.sns.properties.SnsConsumerProperties;
-import de.idealo.spring.stream.binder.sns.properties.SnsExtendedBindingProperties;
-import de.idealo.spring.stream.binder.sns.properties.SnsProducerProperties;
 import org.springframework.cloud.stream.binder.AbstractMessageChannelBinder;
 import org.springframework.cloud.stream.binder.BinderSpecificPropertiesProvider;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
@@ -15,30 +12,33 @@ import org.springframework.integration.channel.AbstractMessageChannel;
 import org.springframework.integration.core.MessageProducer;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
+import org.springframework.util.StringUtils;
 
-import com.amazonaws.services.sns.AmazonSNSAsync;
+import software.amazon.awssdk.services.sns.SnsAsyncClient;
 
+import de.idealo.spring.stream.binder.sns.properties.SnsConsumerProperties;
+import de.idealo.spring.stream.binder.sns.properties.SnsExtendedBindingProperties;
+import de.idealo.spring.stream.binder.sns.properties.SnsProducerProperties;
 import de.idealo.spring.stream.binder.sns.provisioning.SnsProducerDestination;
 import de.idealo.spring.stream.binder.sns.provisioning.SnsStreamProvisioner;
-import org.springframework.util.StringUtils;
 
 public class SnsMessageHandlerBinder
         extends AbstractMessageChannelBinder<ExtendedConsumerProperties<SnsConsumerProperties>, ExtendedProducerProperties<SnsProducerProperties>, SnsStreamProvisioner>
         implements ExtendedPropertiesBinder<MessageChannel, SnsConsumerProperties, SnsProducerProperties> {
 
-    private final AmazonSNSAsync amazonSNS;
+    private final SnsAsyncClient amazonSNS;
 
     private final SnsExtendedBindingProperties extendedBindingProperties;
 
-    public SnsMessageHandlerBinder(AmazonSNSAsync amazonSNS,
-                                   SnsStreamProvisioner provisioningProvider,
-                                   SnsExtendedBindingProperties extendedBindingProperties) {
+    public SnsMessageHandlerBinder(SnsAsyncClient amazonSNS,
+            SnsStreamProvisioner provisioningProvider,
+            SnsExtendedBindingProperties extendedBindingProperties) {
         super(new String[0], provisioningProvider);
         this.amazonSNS = amazonSNS;
         this.extendedBindingProperties = extendedBindingProperties;
     }
 
-    public AmazonSNSAsync getAmazonSNS() {
+    public SnsAsyncClient getAmazonSNS() {
         return amazonSNS;
     }
 
@@ -47,7 +47,6 @@ public class SnsMessageHandlerBinder
         SnsProducerDestination snsDestination = (SnsProducerDestination) destination;
         SnsMessageHandler snsMessageHandler = new SnsMessageHandler(amazonSNS);
         snsMessageHandler.setTopicArn(snsDestination.getArn());
-        snsMessageHandler.setFailureChannel(errorChannel);
         snsMessageHandler.setBeanFactory(getBeanFactory());
 
         if (StringUtils.hasText(producerProperties.getExtension().getConfirmAckChannel())) {
