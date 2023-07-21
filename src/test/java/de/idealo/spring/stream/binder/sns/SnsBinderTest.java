@@ -40,8 +40,7 @@ import de.idealo.spring.stream.binder.sns.config.SnsAsyncAutoConfiguration;
 
 @Testcontainers
 @SpringBootTest(properties = {
-        "cloud.aws.stack.auto=false",
-        "cloud.aws.region.static=eu-central-1",
+        "spring.cloud.aws.region.static=eu-central-1",
         "spring.cloud.stream.binders.sns.type=sns",
         "spring.cloud.stream.bindings.output-out-0.destination=topic1",
         "spring.cloud.stream.bindings.output-out-0.binder=sns",
