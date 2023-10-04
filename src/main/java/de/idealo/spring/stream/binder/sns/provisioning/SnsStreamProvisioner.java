@@ -23,6 +23,10 @@ public class SnsStreamProvisioner implements ProvisioningProvider<ExtendedConsum
         this.destinationResolver = new SnsAsyncTopicArnResolver(amazonSNS);
     }
 
+    public SnsStreamProvisioner(TopicArnResolver topicArnResolver) {
+        this.destinationResolver = topicArnResolver;
+    }
+
     @Override
     public ProducerDestination provisionProducerDestination(String name, ExtendedProducerProperties<SnsProducerProperties> properties) {
         Arn arn = this.destinationResolver.resolveTopicArn(name);

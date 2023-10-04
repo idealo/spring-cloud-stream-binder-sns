@@ -12,6 +12,9 @@ import org.springframework.context.annotation.Configuration;
 
 import software.amazon.awssdk.services.sns.SnsAsyncClient;
 
+import io.awspring.cloud.sns.core.TopicArnResolver;
+import java.util.Optional;
+
 import de.idealo.spring.stream.binder.sns.SnsMessageHandlerBinder;
 import de.idealo.spring.stream.binder.sns.health.SnsBinderHealthIndicator;
 import de.idealo.spring.stream.binder.sns.properties.SnsExtendedBindingProperties;
@@ -23,8 +26,9 @@ import de.idealo.spring.stream.binder.sns.provisioning.SnsStreamProvisioner;
 public class SnsBinderConfiguration {
 
     @Bean
-    public SnsStreamProvisioner provisioningProvider(SnsAsyncClient amazonSNS) {
-        return new SnsStreamProvisioner(amazonSNS);
+    public SnsStreamProvisioner provisioningProvider(SnsAsyncClient amazonSNS, Optional<TopicArnResolver> topicArnResolver) {
+        return topicArnResolver.map(SnsStreamProvisioner::new)
+                .orElseGet(() -> new SnsStreamProvisioner(amazonSNS));
     }
 
     @Bean
