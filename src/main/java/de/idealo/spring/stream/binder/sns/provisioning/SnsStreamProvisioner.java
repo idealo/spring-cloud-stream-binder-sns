@@ -6,11 +6,9 @@ import org.springframework.cloud.stream.provisioning.ConsumerDestination;
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
 import org.springframework.cloud.stream.provisioning.ProvisioningException;
 import org.springframework.cloud.stream.provisioning.ProvisioningProvider;
-import org.springframework.integration.aws.support.SnsAsyncTopicArnResolver;
 
 import io.awspring.cloud.sns.core.TopicArnResolver;
 import software.amazon.awssdk.arns.Arn;
-import software.amazon.awssdk.services.sns.SnsAsyncClient;
 
 import de.idealo.spring.stream.binder.sns.properties.SnsConsumerProperties;
 import de.idealo.spring.stream.binder.sns.properties.SnsProducerProperties;
@@ -19,12 +17,12 @@ public class SnsStreamProvisioner implements ProvisioningProvider<ExtendedConsum
 
     private final TopicArnResolver destinationResolver;
 
-    public SnsStreamProvisioner(SnsAsyncClient amazonSNS) {
-        this.destinationResolver = new SnsAsyncTopicArnResolver(amazonSNS);
-    }
-
     public SnsStreamProvisioner(TopicArnResolver topicArnResolver) {
         this.destinationResolver = topicArnResolver;
+    }
+
+    public TopicArnResolver getDestinationResolver(){
+        return this.destinationResolver;
     }
 
     @Override

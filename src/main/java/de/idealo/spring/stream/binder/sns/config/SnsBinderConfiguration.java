@@ -1,5 +1,6 @@
 package de.idealo.spring.stream.binder.sns.config;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -9,11 +10,11 @@ import org.springframework.cloud.stream.binder.Binder;
 import org.springframework.cloud.stream.config.BindingServiceProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.integration.aws.support.SnsAsyncTopicArnResolver;
 
 import software.amazon.awssdk.services.sns.SnsAsyncClient;
 
 import io.awspring.cloud.sns.core.TopicArnResolver;
-import java.util.Optional;
 
 import de.idealo.spring.stream.binder.sns.SnsMessageHandlerBinder;
 import de.idealo.spring.stream.binder.sns.health.SnsBinderHealthIndicator;
@@ -26,9 +27,9 @@ import de.idealo.spring.stream.binder.sns.provisioning.SnsStreamProvisioner;
 public class SnsBinderConfiguration {
 
     @Bean
-    public SnsStreamProvisioner provisioningProvider(SnsAsyncClient amazonSNS, Optional<TopicArnResolver> topicArnResolver) {
-        return topicArnResolver.map(SnsStreamProvisioner::new)
-                .orElseGet(() -> new SnsStreamProvisioner(amazonSNS));
+    public SnsStreamProvisioner provisioningProvider(SnsAsyncClient amazonSNS, ObjectProvider<TopicArnResolver> topicArnResolverProvider) {
+        TopicArnResolver topicArnResolver = topicArnResolverProvider.getIfAvailable(() -> new SnsAsyncTopicArnResolver(amazonSNS));
+        return new SnsStreamProvisioner(topicArnResolver);
     }
 
     @Bean

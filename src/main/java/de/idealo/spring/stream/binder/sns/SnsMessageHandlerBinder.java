@@ -47,6 +47,7 @@ public class SnsMessageHandlerBinder
         SnsProducerDestination snsDestination = (SnsProducerDestination) destination;
         SnsMessageHandler snsMessageHandler = new SnsMessageHandler(amazonSNS);
         snsMessageHandler.setTopicArn(snsDestination.getArn());
+        snsMessageHandler.setTopicArnResolver(provisioningProvider.getDestinationResolver());
         snsMessageHandler.setBeanFactory(getBeanFactory());
 
         if (StringUtils.hasText(producerProperties.getExtension().getConfirmAckChannel())) {
