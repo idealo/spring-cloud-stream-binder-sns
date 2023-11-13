@@ -24,7 +24,7 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar
 
       - name: Create new release
-        uses: cycjimmy/semantic-release-action@v3
+        uses: cycjimmy/semantic-release-action@v4
         id: semantic
         with:
           extra_plugins: |
