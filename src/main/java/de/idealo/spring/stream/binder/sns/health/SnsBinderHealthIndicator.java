@@ -16,6 +16,7 @@ public class SnsBinderHealthIndicator extends AbstractHealthIndicator {
 
     private final SnsMessageHandlerBinder snsMessageHandlerBinder;
     private final BindingServiceProperties bindingServiceProperties;
+    private static final String ARN_PREFIX = "arn";
 
     public SnsBinderHealthIndicator(final SnsMessageHandlerBinder snsMessageHandlerBinder, final BindingServiceProperties bindingServiceProperties) {
         Assert.notNull(snsMessageHandlerBinder, "SnsMessageHandlerBinder must not be null");
@@ -31,13 +32,14 @@ public class SnsBinderHealthIndicator extends AbstractHealthIndicator {
                 .thenApply(List::stream)
                 .join()
                 .map(Topic::topicArn)
-                .map(topicArn -> topicArn.substring(topicArn.lastIndexOf(':') + 1))
+                .map(SnsBinderHealthIndicator::extractTopicNameFromTopicArn)
                 .collect(Collectors.toSet());
 
         var availableDeclaredTopics = bindingServiceProperties.getBindings().values().stream()
                 .filter(bindingProperties -> "sns".equalsIgnoreCase(bindingProperties.getBinder()))
                 .map(BindingProperties::getDestination)
-                .allMatch(declaredTopic -> availableTopics.contains(declaredTopic));
+                .map(SnsBinderHealthIndicator::extractTopicNameFromTopicArn)
+                .allMatch(availableTopics::contains);
 
         if (availableDeclaredTopics) {
             builder.up();
@@ -46,4 +48,7 @@ public class SnsBinderHealthIndicator extends AbstractHealthIndicator {
         }
     }
 
+    public static String extractTopicNameFromTopicArn(String topicArn){
+        return topicArn.startsWith(ARN_PREFIX) ? topicArn.substring(topicArn.lastIndexOf(':') + 1) : topicArn;
+    }
 }
